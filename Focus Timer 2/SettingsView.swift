@@ -23,6 +23,7 @@ class SettingsManager: ObservableObject {
 
 struct SettingsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var isPresented: Bool
     
     var body: some View {
@@ -136,14 +137,21 @@ struct SettingsView: View {
             }
             .padding(30)
             .frame(width: 420, height: 520)
-            .background(Color.white)
-            .cornerRadius(20)
+            .background(
+                colorScheme == .dark ? Color.black.opacity(0.35) : Color.white,
+                in: RoundedRectangle(cornerRadius: 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+            )
             .shadow(radius: 20)
         }
     }
 }
 
 struct SettingsSection<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let icon: String
     let content: Content
@@ -168,8 +176,10 @@ struct SettingsSection<Content: View>: View {
             content
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
+                .background(
+                    colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: 12)
+                )
         }
     }
 }

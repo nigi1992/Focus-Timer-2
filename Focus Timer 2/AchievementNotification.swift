@@ -11,6 +11,7 @@
 import SwiftUI
 
 struct AchievementNotification: View {
+    @Environment(\.colorScheme) private var colorScheme
     let achievement: Achievement
     
     var body: some View {
@@ -34,7 +35,7 @@ struct AchievementNotification: View {
                 Text(achievement.rawValue)
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 
                 HStack {
                     Image(systemName: "dollarsign.circle.fill")
@@ -54,8 +55,10 @@ struct AchievementNotification: View {
         }
         .padding()
         .frame(width: 320)
-        .background(Color.white)
-        .cornerRadius(16)
+        .background(
+            colorScheme == .dark ? Color.black.opacity(0.4) : Color.white,
+            in: RoundedRectangle(cornerRadius: 16)
+        )
         .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
         .overlay(
             RoundedRectangle(cornerRadius: 16)

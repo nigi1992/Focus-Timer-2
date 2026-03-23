@@ -25,15 +25,22 @@ struct FocusIslandApp: App {
                 .environmentObject(gameState)
                 .environmentObject(achievementManager)
                 .environmentObject(settingsManager)
+                .preferredColorScheme(settingsManager.darkModeEnabled ? .dark : .light)
+                .onAppear {
+                    NotificationManager.shared.requestAuthorization()
+                    SoundFeedbackManager.shared.configure(settingsManager: settingsManager)
+                }
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)) { _ in
                     // Detecting when user leaves the app during active timer
                     gameState.handleAppBackground()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .sessionCompleted)) { notification in
-                                    // Triggering achievement check when session completes
-                        if let earnings = notification.userInfo?["earnings"] as? Int {
-                            achievementManager.recordSessionComplete(earnings: earnings, gameState: gameState)
-                        }
+                    // Triggering achievement check when session completes
+                    if let earnings = notification.userInfo?["earnings"] as? Int {
+                        achievementManager.recordSessionComplete(earnings: earnings, gameState: gameState)
+                    }
+                    NotificationManager.shared.cancelTimerNotifications()
+                    SoundFeedbackManager.shared.play(event: .timerCompleted)
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .buildingPurchased)) { _ in
                                     // Checking building achievements when a building is purchased

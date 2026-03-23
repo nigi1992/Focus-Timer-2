@@ -11,6 +11,7 @@ import SwiftUI
 
 struct ShopView: View {
     @EnvironmentObject var gameState: GameState
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var isPresented: Bool
     @State private var purchaseMessage: String?
     
@@ -29,8 +30,7 @@ struct ShopView: View {
                     Text("🏗️ Building Shop")
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundColor(.red)
-                        .foregroundStyle(.blue) // iOS 15+
+                        .foregroundColor(.primary)
                     
                     Spacer()
                     
@@ -90,8 +90,14 @@ struct ShopView: View {
             }
             .padding(30)
             .frame(width: 420, height: 520)
-            .background(Color.white)
-            .cornerRadius(20)
+            .background(
+                colorScheme == .dark ? Color.black.opacity(0.35) : Color.white,
+                in: RoundedRectangle(cornerRadius: 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+            )
             .shadow(radius: 20)
         }
     }
@@ -110,7 +116,7 @@ struct BuildingCard: View {
             
             Text(buildingType.rawValue)
                 .font(.headline)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
             
             HStack {
                 Image(systemName: "dollarsign.circle")
@@ -123,8 +129,7 @@ struct BuildingCard: View {
             
             Text("+\(buildingType.populationBonus) 👥")
                 .font(.caption)
-                //.foregroundColor(.secondary)
-                .foregroundColor(.black)
+                .foregroundColor(.secondary)
             
             Button("Buy") {
                 onPurchase()

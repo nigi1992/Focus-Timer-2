@@ -76,18 +76,10 @@ class GameState: ObservableObject {
         }
         
         remainingSeconds -= 1
-        //let totalSeconds = Double(selectedMinutes * 60)
-        let totalSeconds = selectedSeconds
-        var elapsedSeconds = totalSeconds - remainingSeconds
-        currentSessionProgress = Double(elapsedSeconds / totalSeconds)
+        let totalSeconds = max(1, selectedSeconds)
+        let newElapsedSeconds = totalSeconds - remainingSeconds
+        currentSessionProgress = Double(newElapsedSeconds) / Double(totalSeconds)
         
-        // Tracking earnings per minute completed
-        //let newElapsedMinutes = Int(elapsedSeconds) / 60
-        //if newElapsedMinutes > elapsedMinutes {
-        //    elapsedMinutes = newElapsedMinutes
-        //    pendingEarnings = elapsedMinutes
-        //}
-        let newElapsedSeconds = Int(elapsedSeconds)
         if newElapsedSeconds > elapsedSeconds {
             elapsedSeconds = newElapsedSeconds
             pendingEarnings = elapsedSeconds
@@ -100,6 +92,7 @@ class GameState: ObservableObject {
             sessionViolated = true
             isTimerRunning = false
             timer?.cancel()
+            NotificationManager.shared.cancelTimerNotifications()
             currentSessionProgress = 0
             pendingEarnings = 0
             //elapsedMinutes = 0
@@ -111,6 +104,7 @@ class GameState: ObservableObject {
     func completeSession() {
         timer?.cancel()
         isTimerRunning = false
+        NotificationManager.shared.cancelTimerNotifications()
         
         // Awarding money: 1 minute = $1
         money += selectedSeconds

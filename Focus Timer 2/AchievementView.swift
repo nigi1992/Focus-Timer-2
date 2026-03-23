@@ -12,6 +12,7 @@ import SwiftUI
 
 struct AchievementView: View {
     @EnvironmentObject var achievementManager: AchievementManager
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var isPresented: Bool
     
     var body: some View {
@@ -64,8 +65,14 @@ struct AchievementView: View {
             }
             .padding(30)
             .frame(width: 450, height: 550)
-            .background(Color.white)
-            .cornerRadius(20)
+            .background(
+                colorScheme == .dark ? Color.black.opacity(0.35) : Color.white,
+                in: RoundedRectangle(cornerRadius: 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+            )
             .shadow(radius: 20)
         }
     }
@@ -94,8 +101,7 @@ struct AchievementRow: View {
                 HStack {
                     Text(achievement.rawValue)
                         .font(.headline)
-                        //.foregroundColor(isUnlocked ? .primary : .secondary)
-                        .foregroundColor(isUnlocked ? .black : .gray)
+                        .foregroundColor(isUnlocked ? .primary : .secondary)
                     
                     if isUnlocked {
                         Image(systemName: "checkmark.seal.fill")
@@ -106,8 +112,7 @@ struct AchievementRow: View {
                 
                 Text(achievement.description)
                     .font(.caption)
-                    //.foregroundColor(.secondary)
-                    .foregroundColor(isUnlocked ? .black : .gray)
+                    .foregroundColor(isUnlocked ? .primary : .secondary)
                 // Reward display
                 HStack {
                     Image(systemName: "dollarsign.circle")

@@ -9,13 +9,14 @@ import SwiftUI
 
 struct EasterEgg: View {
     //@EnvironmentObject var gameState: GameState
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var isPresented: Bool
     //@State private var purchaseMessage: String?
     
     var body: some View {
         ZStack {
             // Dimmed background
-            Color.white.opacity(0.05)
+            Color.black.opacity(0.45)
                 .ignoresSafeArea()
                 .onTapGesture {
                     isPresented = false
@@ -35,14 +36,20 @@ struct EasterEgg: View {
                     Text("Heil Hitler!\n\nScheiss Niggers!!!\n\nSieg Heil!\n\n69\n\n🍑🍆💦💦💦🤤")
                         .font(.title)
                         .fontWeight(.semibold)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .font(.system(size: 60))
             }
         }
         .padding(30)
         .frame(width: 420, height: 520)
-        .background(Color.white)
-        .cornerRadius(20)
+        .background(
+            colorScheme == .dark ? Color.black.opacity(0.35) : Color.white,
+            in: RoundedRectangle(cornerRadius: 20)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+        )
         .shadow(radius: 20)
     }
 }

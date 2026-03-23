@@ -18,6 +18,7 @@ struct HamburgerMenuView: View {
     @Binding var showSettings: Bool
     @EnvironmentObject var gameState: GameState
     @EnvironmentObject var achievementManager: AchievementManager
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         ZStack {
@@ -104,11 +105,14 @@ struct HamburgerMenuView: View {
                     }
                     .padding()
                     .foregroundColor(.secondary)
-                    .background(Color.blue.opacity(0.1))
+                    .background(colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
                 }
                 .frame(width: 250)
-                .background(Color.white)
-                //.background(Color.blue.opacity(0.1))
+                .background(colorScheme == .dark ? Color.black.opacity(0.35) : Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 0)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.16) : Color.black.opacity(0.16), lineWidth: 1)
+                )
                 .shadow(radius: 10)
                 .transition(.move(edge: .leading))
                 
@@ -165,6 +169,6 @@ struct MenuRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .background(Color.white)
+        .background(Color.clear)
     }
 }

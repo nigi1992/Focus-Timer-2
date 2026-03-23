@@ -15,6 +15,7 @@ struct ContentView: View {
     @EnvironmentObject var gameState: GameState
     @EnvironmentObject var achievementManager: AchievementManager
     @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var showShop: Bool = false
     @State private var showCredits: Bool = false
@@ -28,7 +29,9 @@ struct ContentView: View {
         ZStack {
             // Background gradient representing sky/ocean
             LinearGradient(
-                colors: [Color.blue.opacity(0.3), Color.cyan.opacity(0.5)],
+                colors: colorScheme == .dark
+                    ? [Color.indigo.opacity(0.7), Color.black.opacity(0.85)]
+                    : [Color.blue.opacity(0.3), Color.cyan.opacity(0.5)],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -70,34 +73,19 @@ struct ContentView: View {
                 Spacer()
                 HStack {
                     Button(action: {
-                        //achievementManager.unlockEasterEgg(gameState: gameState)
-                        //showEasterEgg = true }) {
-                        // Invisible tappable area
-                        //Rectangle()
-                            //.fill(Color.clear)
-                            //.frame(width: 20, height: 20)
                         easterEggTapCount += 1
-                        if easterEggTapCount >= 2 {
-                            // Unlocking achievement BEFORE showing easter egg view
-                            achievementManager.unlockEasterEgg(gameState: gameState)
-                                        
-                            // Small delay to let notification appear first
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                showEasterEgg = true
-                            }
+                        if easterEggTapCount >= 3 {
+                            showEasterEgg = true
                             easterEggTapCount = 0
                         }
-                        // Resetting tap count after 2 seconds of inactivity
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             easterEggTapCount = 0
                         }
                     }) {
                         Rectangle()
                             .fill(Color.clear)
-                            //.background(Color.clear)
-                            //.foregroundColor(.clear)
-                            //.foregroundColor(.cyan.opacity(0.5))
-                            .frame(width: 20, height: 20)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     
@@ -151,18 +139,32 @@ struct ContentView: View {
                     }
         }
         .frame(width: 500, height: 700)
+        .onChange(of: showEasterEgg) { isShown in
+            if isShown {
+                achievementManager.unlockEasterEgg(gameState: gameState)
+            }
+        }
     }
 }
 
 struct TopBarView: View {
     @EnvironmentObject var gameState: GameState
-    @EnvironmentObject var achievementManager: AchievementManager
+    @Environment(\.colorScheme) private var colorScheme
     
     @Binding var showHamburgerMenu: Bool
     @Binding var showSettings: Bool
     @Binding var showShop: Bool
     @Binding var showCredits: Bool
     @Binding var showAchievements: Bool
+    
+    private var chromeBackground: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(colorScheme == .dark ? Color.white.opacity(0.12) : Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+            )
+    }
     
     var body: some View {
         HStack {
@@ -176,8 +178,7 @@ struct TopBarView: View {
                     .font(.title2)
                     .foregroundColor(.primary)
                     .frame(width: 44, height: 44)
-                    .background(Color.white.opacity(0.8))
-                    .cornerRadius(10)
+                    .background(chromeBackground)
             }
             .buttonStyle(.plain)
             .disabled(gameState.isTimerRunning)
@@ -215,8 +216,7 @@ struct TopBarView: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.white.opacity(0.8))
-                .cornerRadius(10)
+                .background(chromeBackground)
                 
                 // Settings button
                 Button(action: { showSettings = true }) {
@@ -224,8 +224,7 @@ struct TopBarView: View {
                         .font(.title3)
                         .foregroundColor(.primary)
                         .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.8))
-                        .cornerRadius(10)
+                        .background(chromeBackground)
                 }
                 .buttonStyle(.plain)
                 .disabled(gameState.isTimerRunning)
@@ -271,6 +270,8 @@ struct IslandView: View {
 
 struct TimerControlView: View {
     @EnvironmentObject var gameState: GameState
+    @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(spacing: 20) {
@@ -299,6 +300,8 @@ struct TimerControlView: View {
                 
                 Button("Give Up") {
                     gameState.stopTimer()
+                    NotificationManager.shared.cancelTimerNotifications()
+                    SoundFeedbackManager.shared.play(event: .timerCancelled)
                 }
                 .buttonStyle(.bordered)
                 .tint(.red)
@@ -330,14 +333,25 @@ struct TimerControlView: View {
                               
                 Button("Start Focus Session") {
                     gameState.startTimer()
+                    NotificationManager.shared.scheduleTimerFinishedNotification(
+                        after: TimeInterval(gameState.selectedSeconds),
+                        enabled: settingsManager.notificationsEnabled
+                    )
+                    SoundFeedbackManager.shared.play(event: .timerStarted)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
             }
         }
         .padding()
-        .background(Color.white.opacity(0.8))
-        .cornerRadius(20)
+        .background(
+            colorScheme == .dark ? Color.black.opacity(0.32) : Color.white,
+            in: RoundedRectangle(cornerRadius: 20)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(colorScheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.2), lineWidth: 1)
+        )
     }
     
     func timeString(from seconds: Int) -> String {
